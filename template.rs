@@ -1,25 +1,27 @@
 use advent_of_code_2025::*;
 
+const PUZZLE: &str = include_str!("../../puzzles/day02.txt");
+
 fn main() {
-    let d = Day01::new(include_str!("../../puzzles/day01.txt"));
-    dbg!(d.part1());
-    println!("Part 1: {}", d.part1());
+    let d = Day01::new(PUZZLE);
+    let d = d.solve();
+    println!("Part 1: {}", d.part1);
+    //println!("Part 2: {}", d.part2);
 }
 
 #[derive(Debug)]
-pub struct Day01 {}
+pub struct Day01 {
+    pub part1: usize,
+    pub part2: usize,
+}
 
-impl Puzzle<u64, u64> for Day01 {
-    fn new(_input: &str) -> Self {
+impl Puzzle for Day01 {
+    fn new(input: &str) -> Self {
         Self {}
     }
 
-    fn part1(&self) -> u64 {
-        todo!()
-    }
-
-    fn part2(&self) -> u64 {
-        todo!()
+    fn solve(mut self) -> Self {
+        self
     }
 }
 
@@ -31,6 +33,6 @@ mod day01 {
 
     #[test]
     fn test1() {
-        assert_eq!(Day01::new(SAMPLE).part1(), 0);
+        assert_eq!(Day01::new(SAMPLE).solve().part1, todo!());
     }
 }
