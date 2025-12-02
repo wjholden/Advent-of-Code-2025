@@ -2,3 +2,6 @@
 name = "advent_of_code_2025"
 version = "0.1.0"
 edition = "2024"
+
+[features]
+up_the_ante = []

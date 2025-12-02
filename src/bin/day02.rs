@@ -2,6 +2,28 @@ use advent_of_code_2025::*;
 
 const PUZZLE: &str = include_str!("../../puzzles/day02.txt");
 
+/// There is a clever solution out there where you test for divisibility
+/// with numbers like 1001, but I'm not sure how to make this work for ranges.
+/// You might end up with tricky off-by-one errors where patterns like `xyzxyz`
+/// overlap `xyxyxy`.
+///
+/// A four-digit number `xyxy` has repeated groups of digits iff `xyxy = xy * 101`.
+/// `x` and `y` may be equal, which handles the case `xxxx`.
+///
+/// ```
+/// 2 digits:  xx -> 11
+/// 3 digits:  xxx -> 111
+/// 4 digits:  xyxy -> 101
+/// 5 digits:  xxxxx -> 11111
+/// 6 digits:  xyzxyz -> 1001
+///            xyxyxy -> 10101
+/// 7 digits:  xxxxxxx -> 1111111
+/// 8 digits:  xyxyxyxy -> 1010101
+///            xyzwxyzw -> 10001
+/// 9 digits:  xyzxyzxyz -> 1001001
+/// 10 digits: xyxyxyxyxy -> 101010101
+///            xyzwtxyzwt -> 100001
+/// ```
 fn main() {
     let d = Puzzle::new(PUZZLE);
     let d = d.solve();
@@ -12,20 +34,21 @@ fn main() {
 /// ...you can find the invalid IDs by looking for any ID which is made only of
 /// some sequence of digits repeated twice. So, 55 (5 twice), 6464 (64 twice),
 /// and 123123 (123 twice) would all be invalid IDs.
-fn is_valid(i: usize) -> bool {
+fn is_invalid(i: usize) -> bool {
     let n = i.ilog10() + 1;
     // odd numbers can never be invalid since you can't break them into two sequences.
     if n % 2 == 1 {
-        return true;
+        return false;
     }
     let d = 10usize.pow(n / 2);
     let half = i % d;
-    i != half + (half * d) // invalid if doubled sequence.
+    i == half + (half * d) // invalid if doubled sequence.
 }
 
 /// Now, an ID is invalid if it is made only of some sequence of digits
 /// repeated at least twice
-fn is_valid2(i: usize) -> bool {
+#[allow(dead_code)]
+fn is_invalid2(i: usize) -> bool {
     let n = i.ilog10() + 1;
     for s in 1..=n / 2 {
         // skip anything where we can't make groups of sequences.
@@ -43,10 +66,27 @@ fn is_valid2(i: usize) -> bool {
             total = d * total + seq;
         }
         if total == i {
-            return false;
+            return true;
         }
     }
-    true
+    false
+}
+
+#[allow(dead_code)]
+fn is_invalid2_remix(i: usize) -> bool {
+    match 1 + i.ilog10() {
+        1 => false,
+        2 => i.is_multiple_of(11),
+        3 => i.is_multiple_of(111),
+        4 => i.is_multiple_of(101),
+        5 => i.is_multiple_of(11111),
+        6 => i.is_multiple_of(1001) || i.is_multiple_of(10101),
+        7 => i.is_multiple_of(1111111),
+        8 => i.is_multiple_of(1010101) || i.is_multiple_of(10001),
+        9 => i.is_multiple_of(1001001),
+        10 => i.is_multiple_of(101010101) || i.is_multiple_of(100001),
+        _ => panic!(),
+    }
 }
 
 #[derive(Debug)]
@@ -73,16 +113,43 @@ impl Solver for Puzzle {
         }
     }
 
+    #[cfg(not(feature = "up_the_ante"))]
     fn solve(mut self) -> Self {
-        // part 1
+        self.part1 = 0;
+        self.part2 = 0;
         for (l, r) in self.pairs.iter() {
             for i in *l..=*r {
-                if !is_valid(i) {
+                if is_invalid(i) {
                     self.part1 += i;
                 }
-                if !is_valid2(i) {
+                if is_invalid2_remix(i) {
                     self.part2 += i;
                 }
+            }
+        }
+        self
+    }
+
+    #[cfg(feature = "up_the_ante")]
+    fn solve(mut self) -> Self {
+        use std::collections::HashMap;
+
+        let strides1 = HashMap::from([(2, 11), (4, 101), (6, 1001), (8, 10001), (10, 100001)]);
+
+        let strides2 = HashMap::from([
+            (3, 111),
+            (5, 11111),
+            (6, 10101),
+            (7, 1111111),
+            (8, 1010101),
+            (9, 1001001),
+            (10, 101010101),
+        ]);
+
+        for (l, r) in self.pairs.iter() {
+            let digits = 1 + l.ilog10();
+            if let Some(stride1) = strides1.get(digits) {
+                todo!()
             }
         }
 
@@ -111,14 +178,14 @@ mod day01 {
     #[test]
     fn invalid() {
         for i in [55, 6464, 123123] {
-            assert!(!is_valid(i))
+            assert!(is_invalid(i))
         }
     }
 
     #[test]
     fn invalid2() {
         for i in [12341234, 123123123, 1212121212, 1111111] {
-            assert!(!is_valid2(i))
+            assert!(is_invalid2(i))
         }
     }
 }
