@@ -24,6 +24,9 @@ const PUZZLE: &str = include_str!("../../puzzles/day02.txt");
 /// 10 digits: xyxyxyxyxy -> 101010101
 ///            xyzwtxyzwt -> 100001
 /// ```
+///
+/// Someone found a closed-form solution:
+/// https://www.reddit.com/r/adventofcode/comments/1pcbgai/2025_day_2_day_2_should_be_easy_right_closed/
 fn main() {
     let d = Puzzle::new(PUZZLE);
     let d = d.solve();
