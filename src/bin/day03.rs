@@ -11,8 +11,9 @@ const PUZZLE: &str = include_str!("../../puzzles/day03.txt");
 fn main() {
     let d = Puzzle::new(PUZZLE);
     let d = d.solve();
-    println!("Part 1: {}", d.part1); // 16874 wrong
+    println!("Part 1: {}", d.part1);
     println!("Part 2: {}", d.part2);
+    println!("{:?}", Puzzle::new(PUZZLE).time());
 }
 
 #[derive(Debug)]
