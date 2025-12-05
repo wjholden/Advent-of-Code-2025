@@ -21,6 +21,9 @@ const PUZZLE: &str = include_str!("../../puzzles/day05.txt");
 /// Using 0..=0 as a sentinel value was supposed to make it easy to know if we
 /// should include or exclude a range in our part2 sum. Easy, except what if
 /// the range is x..=x? So, we check if x=0 and, it not, push 1 to part2.
+///
+/// So in the updated version you're reading here, we use Optional instead of
+/// the sentinel value. Our program now handles ranges that include zero.
 fn main() {
     let d = Puzzle::new(PUZZLE);
     let d = d.solve();
@@ -84,45 +87,25 @@ impl Solver for Puzzle {
         }
 
         let n = self.ranges.len();
-        'outer: for i in 0..n - 1 {
-            assert_ne!(self.ranges[i], 0..=0); // we should never revisit something merged
-            //println!("{:?}", self.ranges);
-            for j in i + 1..n {
-                let start1 = *self.ranges[i].start();
-                let end1 = *self.ranges[i].end();
-                let start2 = *self.ranges[j].start();
-                let end2 = *self.ranges[j].end();
-
-                assert!(start1 <= start2);
-
-                if end2 < start1 {
-                    continue 'outer;
-                }
-
+        let mut ranges: Vec<Option<RangeInclusive<usize>>> =
+            self.ranges.clone().into_iter().map(|r| Some(r)).collect();
+        for i in 0..n - 1 {
+            if let (Some(r1), Some(r2)) = (ranges[i].clone(), ranges[i + 1].clone()) {
+                let start1 = *r1.start();
+                let end1 = *r1.end();
+                let start2 = *r2.start();
+                let end2 = *r2.end();
                 if start2 <= end1 {
-                    //print!("{start1}-{end1} overlaps {start2}-{end2}: ");
-                    self.ranges[i] = 0..=0;
-                    self.ranges[j] = start1..=(end1.max(end2));
-                    //println!("merge to {:?}", self.ranges[j]);
-                    continue 'outer;
+                    ranges[i] = None;
+                    ranges[i + 1] = Some(start1..=(end1.max(end2)));
                 }
             }
         }
 
-        for range in self.ranges.iter() {
-            let length = range.end() - range.start();
-
-            // What if the range is x..=x but not at 0..=0?
-            if length == 0 && *range.start() > 0 {
-                //println!("{}-{} (single entry)", range.start(), range.end());
-                self.part2 += 1;
-            }
-
-            if length > 0 {
-                //println!("{}-{}", range.start(), range.end());
-                self.part2 += length + 1;
-            }
-        }
+        self.part2 = ranges.into_iter().fold(0, |acc, r| match r {
+            Some(r) => acc + 1 + r.end() - r.start(),
+            None => acc,
+        });
         self
     }
 }
@@ -143,7 +126,7 @@ mod day01 {
 17
 32";
 
-    const MORE: &str = "1-50
+    const MORE: &str = "11-50
 31-70
 41-45
 111-130
@@ -157,8 +140,9 @@ mod day01 {
 33-33
 201-202
 1000-1000
+0-0
 
-170";
+162";
 
     #[test]
     fn test1() {
@@ -172,6 +156,6 @@ mod day01 {
 
     #[test]
     fn more() {
-        assert_eq!(Puzzle::new(MORE).solve().part2, 171);
+        assert_eq!(Puzzle::new(MORE).solve().part2, 162);
     }
 }
