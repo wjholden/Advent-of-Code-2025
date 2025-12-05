@@ -133,6 +133,10 @@ impl Solver for Puzzle {
                 }
 
                 for (di, dj) in DIFF {
+                    // Don't revisit anything we've already removed.
+                    if removed.contains(&(i + di, j + dj)) {
+                        continue;
+                    }
                     if let Some(neighbors) = adj.get_mut(&(i + di, j + dj)) {
                         *neighbors -= 1;
                         heap.push(Reverse((*neighbors, (i + di, j + dj))));

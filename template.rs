@@ -7,6 +7,7 @@ fn main() {
     let d = d.solve();
     println!("Part 1: {}", d.part1);
     //println!("Part 2: {}", d.part2);
+    println!("{:?}", Puzzle::time(PUZZLE));
 }
 
 #[derive(Debug)]
@@ -17,7 +18,7 @@ pub struct Puzzle {
 
 impl Solver for Puzzle {
     fn new(input: &str) -> Self {
-        Self {}
+        todo!()
     }
 
     fn solve(mut self) -> Self {
