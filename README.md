@@ -9,7 +9,7 @@ Rust again, this time with an object-oriented design.
 3. `**` greedy algorithm design, dynamic programming?
 4. `**` set difference, grids
 5. `**` ranges, off-by-one errors
-6. `  `
+6. `**` vertical text layout
 7. `  `
 8. `  `
 9. `  `
@@ -23,3 +23,5 @@ Rust again, this time with an object-oriented design.
 - You can mutate the entries in a BinaryHeap, but Rust's implementation does not "heapify" the data structure to maintain the heap invariant.
 - HashSet/HashMap often outperforms BTreeSet/BTreeMap in these small puzzles.
 - Range has some unstable features that might have been useful in day 5.
+- There is no `windows_mut` function.
+- Zed (currently) removes trailing whitespace from lines, which mattered on day 6.

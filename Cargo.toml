@@ -6,3 +6,6 @@ edition = "2024"
 [features]
 up_the_ante = []
 faster = []
+
+[dependencies]
+nalgebra = "0.34.1"

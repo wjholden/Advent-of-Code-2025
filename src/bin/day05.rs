@@ -90,15 +90,14 @@ impl Solver for Puzzle {
         let mut ranges: Vec<Option<RangeInclusive<usize>>> =
             self.ranges.clone().into_iter().map(|r| Some(r)).collect();
         for i in 0..n - 1 {
-            if let (Some(r1), Some(r2)) = (ranges[i].clone(), ranges[i + 1].clone()) {
+            if let (Some(r1), Some(r2)) = (ranges[i].clone(), ranges[i + 1].clone())
+                && r2.start() <= r1.end()
+            {
                 let start1 = *r1.start();
                 let end1 = *r1.end();
-                let start2 = *r2.start();
                 let end2 = *r2.end();
-                if start2 <= end1 {
-                    ranges[i] = None;
-                    ranges[i + 1] = Some(start1..=(end1.max(end2)));
-                }
+                ranges[i] = None;
+                ranges[i + 1] = Some(start1..=(end1.max(end2)));
             }
         }
 
