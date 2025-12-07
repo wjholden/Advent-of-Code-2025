@@ -18,12 +18,21 @@ const DIFF: [(isize, isize); 8] = [
 
 /// I really didn't think this select-and-prune technique was going to be fast
 /// enough for part 2, but it works.
+///
+/// This is
 fn main() {
     let d = Puzzle::new(PUZZLE);
     let d = d.solve();
     println!("Part 1: {}", d.part1);
     println!("Part 2: {}", d.part2);
-    println!("{:?}", Puzzle::time(PUZZLE));
+    #[cfg(not(feature = "faster"))]
+    {
+        println!("{:?}", Puzzle::time(PUZZLE));
+    }
+    #[cfg(feature = "faster")]
+    {
+        println!("{:?} (faster approach)", Puzzle::time(PUZZLE));
+    }
 }
 
 #[derive(Debug)]

@@ -32,7 +32,14 @@ fn main() {
     let d = d.solve();
     println!("Part 1: {}", d.part1);
     println!("Part 2: {}", d.part2);
-    println!("{:?}", Puzzle::time(PUZZLE));
+    #[cfg(not(feature = "faster"))]
+    {
+        println!("{:?}", Puzzle::time(PUZZLE));
+    }
+    #[cfg(feature = "faster")]
+    {
+        println!("{:?} (faster approach)", Puzzle::time(PUZZLE));
+    }
 }
 
 /// ...you can find the invalid IDs by looking for any ID which is made only of
@@ -51,7 +58,7 @@ fn is_invalid(i: usize) -> bool {
 
 /// Now, an ID is invalid if it is made only of some sequence of digits
 /// repeated at least twice
-#[allow(dead_code)]
+#[cfg(not(feature = "faster"))]
 fn is_invalid2(i: usize) -> bool {
     let n = i.ilog10() + 1;
     for s in 1..=n / 2 {
@@ -76,8 +83,8 @@ fn is_invalid2(i: usize) -> bool {
     false
 }
 
-#[allow(dead_code)]
-fn is_invalid2_remix(i: usize) -> bool {
+#[cfg(feature = "faster")]
+fn is_invalid2(i: usize) -> bool {
     match 1 + i.ilog10() {
         1 => false,
         2 => i.is_multiple_of(11),
@@ -117,7 +124,6 @@ impl Solver for Puzzle {
         }
     }
 
-    #[cfg(not(feature = "up_the_ante"))]
     fn solve(mut self) -> Self {
         self.part1 = 0;
         self.part2 = 0;
@@ -126,37 +132,11 @@ impl Solver for Puzzle {
                 if is_invalid(i) {
                     self.part1 += i;
                 }
-                if is_invalid2_remix(i) {
+                if is_invalid2(i) {
                     self.part2 += i;
                 }
             }
         }
-        self
-    }
-
-    #[cfg(feature = "up_the_ante")]
-    fn solve(mut self) -> Self {
-        use std::collections::HashMap;
-
-        let strides1 = HashMap::from([(2, 11), (4, 101), (6, 1001), (8, 10001), (10, 100001)]);
-
-        let strides2 = HashMap::from([
-            (3, 111),
-            (5, 11111),
-            (6, 10101),
-            (7, 1111111),
-            (8, 1010101),
-            (9, 1001001),
-            (10, 101010101),
-        ]);
-
-        for (l, r) in self.pairs.iter() {
-            let digits = 1 + l.ilog10();
-            if let Some(stride1) = strides1.get(digits) {
-                todo!()
-            }
-        }
-
         self
     }
 }

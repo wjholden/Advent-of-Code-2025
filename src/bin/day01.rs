@@ -72,24 +72,6 @@ impl Solver for Puzzle {
     }
 }
 
-impl Puzzle {
-    // todo: passes tests but gets wrong answer for part 2.
-    #[allow(dead_code)]
-    fn solve_faster(mut self) -> Self {
-        for turn in self.turns.iter() {
-            self.position = self.position + turn;
-            if self.position < 0 || self.position > 99 {
-                self.part2 += 1 + (turn.abs() / 100) as usize;
-            }
-            self.position = self.position.rem_euclid(100);
-            if self.position == 0 {
-                self.part1 += 1;
-            }
-        }
-        self
-    }
-}
-
 #[cfg(test)]
 mod day01 {
     use super::*;
@@ -118,15 +100,5 @@ L82";
     #[test]
     fn test3() {
         assert_eq!(Puzzle::new("R1000").solve().part2, 10);
-    }
-
-    #[test]
-    fn faster1() {
-        assert_eq!(Puzzle::new(SAMPLE).solve_faster().part1, 3);
-    }
-
-    #[test]
-    fn faster2() {
-        assert_eq!(Puzzle::new(SAMPLE).solve_faster().part2, 6);
     }
 }

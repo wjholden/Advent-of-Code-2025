@@ -20,7 +20,14 @@ fn main() {
     let d = d.solve();
     println!("Part 1: {}", d.part1);
     println!("Part 2: {}", d.part2); // 5129287 too low
-    println!("{:?}", Puzzle::time(PUZZLE));
+    #[cfg(not(feature = "faster"))]
+    {
+        println!("{:?}", Puzzle::time(PUZZLE));
+    }
+    #[cfg(feature = "faster")]
+    {
+        println!("{:?} (not-actually-faster approach)", Puzzle::time(PUZZLE));
+    }
 }
 
 #[derive(Debug)]

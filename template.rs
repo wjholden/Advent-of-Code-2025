@@ -10,7 +10,7 @@ fn main() {
     println!("{:?}", Puzzle::time(PUZZLE));
 }
 
-#[derive(Debug)]
+#[derive(Default, Debug)]
 pub struct Puzzle {
     pub part1: usize,
     pub part2: usize,
@@ -18,7 +18,9 @@ pub struct Puzzle {
 
 impl Solver for Puzzle {
     fn new(input: &str) -> Self {
-        todo!()
+        let mut instance = Self::default();
+
+        instance
     }
 
     fn solve(mut self) -> Self {
@@ -30,7 +32,7 @@ impl Solver for Puzzle {
 mod day01 {
     use super::*;
 
-    const SAMPLE: &str = "";
+    const SAMPLE: &str = include_str!("../../samples/dayXX.txt");
 
     #[test]
     fn test1() {

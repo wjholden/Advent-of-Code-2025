@@ -10,7 +10,7 @@ Rust again, this time with an object-oriented design.
 4. `**` set difference, grids
 5. `**` ranges, off-by-one errors
 6. `**` vertical text layout
-7. `  `
+7. `**` dynamic programming, graph paths
 8. `  `
 9. `  `
 10. `  `
@@ -25,3 +25,4 @@ Rust again, this time with an object-oriented design.
 - Range has some unstable features that might have been useful in day 5.
 - There is no `windows_mut` function.
 - Zed (currently) removes trailing whitespace from lines, which mattered on day 6.
+- If you only need set entries once, then you might be able to significantly speed up an algorithm by removing the data instead of just checking contains.
