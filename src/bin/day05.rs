@@ -2,7 +2,7 @@ use std::ops::RangeInclusive;
 
 use advent_of_code_2025::*;
 
-const PUZZLE: &str = include_str!("../../puzzles/day05.txt");
+pub const PUZZLE: &str = include_str!("../../puzzles/day05.txt");
 
 /// Tricky puzzle! My bug was not noticing that a range might have a length of
 /// zero but not at 0..=0.

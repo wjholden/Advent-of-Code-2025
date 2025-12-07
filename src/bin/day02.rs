@@ -1,6 +1,6 @@
 use advent_of_code_2025::*;
 
-const PUZZLE: &str = include_str!("../../puzzles/day02.txt");
+pub const PUZZLE: &str = include_str!("../../puzzles/day02.txt");
 
 /// There is a clever solution out there where you test for divisibility
 /// with numbers like 1001, but I'm not sure how to make this work for ranges.

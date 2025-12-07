@@ -1,6 +1,6 @@
 use advent_of_code_2025::*;
 
-const PUZZLE: &str = include_str!("../../puzzles/day01.txt");
+pub const PUZZLE: &str = include_str!("../../puzzles/day01.txt");
 
 /// Trickier than it looks. I resorted to a naive algorithm that
 /// simply counts each individual click. Had initially tried

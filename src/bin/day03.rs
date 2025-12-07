@@ -1,6 +1,6 @@
 use advent_of_code_2025::*;
 
-const PUZZLE: &str = include_str!("../../puzzles/day03.txt");
+pub const PUZZLE: &str = include_str!("../../puzzles/day03.txt");
 
 /// It's a partially-greedy algorithm! Within a substring of the input, you
 /// know to take the left-most copy of the largest digit, but you don't know
@@ -8,6 +8,10 @@ const PUZZLE: &str = include_str!("../../puzzles/day03.txt");
 ///
 /// Here's a nice visualization of a clever approach:
 /// https://www.reddit.com/r/adventofcode/comments/1pdc396/2025_day_3_part_2_python_terminal_visualization/
+///
+/// I had expected you could build a rectangular memo table (sort of like
+/// editing distance), but this approach fails because you can't greedily know
+/// whether taking the next battery was the safe choice or not.
 fn main() {
     let d = Puzzle::new(PUZZLE);
     let d = d.solve();
@@ -43,7 +47,6 @@ fn part1(line: &str) -> usize {
     10 * (c1 as usize - '0' as usize) + (c2 as usize - '0' as usize)
 }
 
-#[cfg(not(feature = "up_the_ante"))]
 fn part2(line: &str) -> usize {
     let mut start = 0;
     let mut d = 12;
@@ -63,34 +66,6 @@ fn part2(line: &str) -> usize {
         start += new_start + 1;
     }
     s12
-}
-
-#[cfg(feature = "up_the_ante")]
-fn part2(batteries: &str) -> usize {
-    dp(batteries, 12)
-}
-
-#[cfg(feature = "up_the_ante")]
-/// Doesn't quite work. See case `234234234234278` -- this solution fails to
-/// skip over the second 2. Passes some cases but not all.
-fn dp(batteries: &str, count: usize) -> usize {
-    use std::collections::HashMap;
-
-    let mut x = HashMap::<(usize, usize), usize>::new();
-    for (j, c) in batteries.char_indices() {
-        x.insert((0, j + 1), c as usize - '0' as usize);
-    }
-    'outer: for j in 1..=batteries.len() {
-        for i in 1..count {
-            if i > j {
-                continue 'outer;
-            }
-            let yes_take = 10 * *x.entry((i - 1, j - 1)).or_default() + x.get(&(0, j)).unwrap();
-            let not_take = *x.entry((i, j - 1)).or_default();
-            x.insert((i, j), yes_take.max(not_take));
-        }
-    }
-    *x.get(&(count - 1, batteries.len())).unwrap()
 }
 
 impl Solver for Puzzle {
@@ -146,13 +121,5 @@ mod day01 {
         assert_eq!(part1("1111145411111"), 54);
         assert_eq!(part1("123123"), 33);
         assert_eq!(part1("321321321"), 33); // this was my bug
-    }
-
-    #[test]
-    #[cfg(feature = "up_the_ante")]
-    fn up_the_ante() {
-        assert_eq!(dp("987654321111111", 12), 987654321111);
-        assert_eq!(dp("811111111111119", 12), 811111111119);
-        assert_eq!(dp("234234234234278", 12), 434234234278);
     }
 }

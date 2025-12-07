@@ -4,7 +4,7 @@ use std::collections::HashSet;
 
 use advent_of_code_2025::*;
 
-const PUZZLE: &str = include_str!("../../puzzles/day04.txt");
+pub const PUZZLE: &str = include_str!("../../puzzles/day04.txt");
 const DIFF: [(isize, isize); 8] = [
     (-1, -1),
     (-1, 0),

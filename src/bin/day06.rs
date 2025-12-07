@@ -3,7 +3,7 @@ use std::panic;
 use advent_of_code_2025::*;
 use nalgebra::DMatrix;
 
-const PUZZLE: &str = include_str!("../../puzzles/day06.txt");
+pub const PUZZLE: &str = include_str!("../../puzzles/day06.txt");
 
 /// Ugh. That was tricky. Who knew that vertical text would be so difficult to
 /// work with?
