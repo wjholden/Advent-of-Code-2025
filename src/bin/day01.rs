@@ -73,7 +73,7 @@ impl Solver for Puzzle {
 }
 
 #[cfg(test)]
-mod day01 {
+mod secret_entrance {
     use super::*;
 
     const SAMPLE: &str = "L68

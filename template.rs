@@ -1,6 +1,6 @@
 use advent_of_code_2025::*;
 
-const PUZZLE: &str = include_str!("../../puzzles/dayXX.txt");
+pub const PUZZLE: &str = include_str!("../../puzzles/dayXX.txt");
 
 fn main() {
     let d = Puzzle::new(PUZZLE);
@@ -29,7 +29,7 @@ impl Solver for Puzzle {
 }
 
 #[cfg(test)]
-mod day01 {
+mod puzzle_name {
     use super::*;
 
     const SAMPLE: &str = include_str!("../../samples/dayXX.txt");

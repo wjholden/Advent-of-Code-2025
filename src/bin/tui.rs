@@ -8,6 +8,7 @@ mod day04;
 mod day05;
 mod day06;
 mod day07;
+mod day08;
 
 use crossterm::event::{self, Event, KeyCode, KeyEventKind};
 use ratatui::{
@@ -124,6 +125,11 @@ fn solutions() -> Vec<(usize, usize, std::time::Duration)> {
         {
             let start = Instant::now();
             let d = day07::Puzzle::new(day07::PUZZLE).solve();
+            (d.part1, d.part2, start.elapsed())
+        },
+        {
+            let start = Instant::now();
+            let d = day08::Puzzle::new(day08::PUZZLE).solve();
             (d.part1, d.part2, start.elapsed())
         },
     ]
