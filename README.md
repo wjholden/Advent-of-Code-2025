@@ -11,7 +11,7 @@ Rust again, this time with an object-oriented design.
 5. `**` ranges, off-by-one errors
 6. `**` vertical text layout
 7. `**` dynamic programming, graph paths
-8. `  `
+8. `**` union-find/disjoint sets, Euclidean distances
 9. `  `
 10. `  `
 11. `  `
@@ -26,3 +26,6 @@ Rust again, this time with an object-oriented design.
 - There is no `windows_mut` function.
 - Zed (currently) removes trailing whitespace from lines, which mattered on day 6.
 - If you only need set entries once, then you might be able to significantly speed up an algorithm by removing the data instead of just checking contains.
+- In day 8, using a priority queue should be (I don't have it working yet) a substantial performance improvement over populating a full distances matrix and then sorting it.
+- Also in day 8, you don't need to calculate the square roots of the distances.
+- Tuples are supposed to be ordered in lexical order, from left to right.

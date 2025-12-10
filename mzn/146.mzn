@@ -1,0 +1,10 @@
+var 0..: a;
+var 0..: b;
+var 1..: z;
+constraint 18 = a;
+constraint 20 = a + b;
+constraint 18 = a;
+constraint 2 = b;
+constraint z = a + b;
+solve minimize z;
+output "\(z)";

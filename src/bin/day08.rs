@@ -156,7 +156,7 @@ impl Solver for Puzzle {
         {
             for (i, p1) in instance.points.iter().enumerate() {
                 for (j, p2) in instance.points.iter().enumerate() {
-                    if i < j {
+                    if i > j {
                         assert_eq!(p1.distance(&p2), p2.distance(&p1));
                         let d = p1.distance(&p2);
                         instance.distances.push(Reverse((d, (i, j))));
@@ -191,10 +191,10 @@ impl Solver for Puzzle {
             for (i, _) in di[0..n].iter() {
                 let a = i / self.points.len();
                 let b = i % self.points.len();
-                println!(
-                    "{a} and {b} (distance: {})",
-                    self.points[a].distance(&self.points[b])
-                );
+                // println!(
+                //     "{a} and {b} (distance: {})",
+                //     self.points[a].distance(&self.points[b])
+                // );
                 disjoint_set.union(a, b);
             }
 

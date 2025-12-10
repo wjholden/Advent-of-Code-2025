@@ -1,0 +1,14 @@
+var 0..: a;
+var 0..: b;
+var 0..: c;
+var 0..: d;
+var 1..: z;
+constraint 35 = a + b + d;
+constraint 37 = a + c + d;
+constraint 35 = a + b + d;
+constraint 33 = a + c;
+constraint 31 = a + b;
+constraint 20 = c + d;
+constraint z = a + b + c + d;
+solve minimize z;
+output "\(z)";

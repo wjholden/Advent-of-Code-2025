@@ -1,0 +1,12 @@
+var 0..: a;
+var 0..: b;
+var 0..: c;
+var 1..: z;
+constraint 10 = c;
+constraint 22 = b + c;
+constraint 14 = a;
+constraint 36 = a + b + c;
+constraint 22 = b + c;
+constraint z = a + b + c;
+solve minimize z;
+output "\(z)";

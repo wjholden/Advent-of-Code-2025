@@ -1,0 +1,17 @@
+var 0..: a;
+var 0..: b;
+var 0..: c;
+var 0..: d;
+var 0..: e;
+var 0..: f;
+var 0..: g;
+var 1..: z;
+constraint 42 = d + e + f;
+constraint 51 = a + b + e + f;
+constraint 28 = c + d;
+constraint 21 = a + d;
+constraint 43 = d + e + g;
+constraint 57 = a + c + d + e;
+constraint z = a + b + c + d + e + f + g;
+solve minimize z;
+output "\(z)";

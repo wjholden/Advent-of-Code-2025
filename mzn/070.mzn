@@ -1,0 +1,14 @@
+var 0..: a;
+var 0..: b;
+var 0..: c;
+var 0..: d;
+var 1..: z;
+constraint 153 = a + b + d;
+constraint 171 = b + c + d;
+constraint 171 = b + c + d;
+constraint 20 = d;
+constraint 172 = a + b + c + d;
+constraint 132 = b;
+constraint z = a + b + c + d;
+solve minimize z;
+output "\(z)";
