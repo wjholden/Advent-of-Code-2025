@@ -7,7 +7,7 @@ fn main() {
     let d = d.solve();
     println!("Part 1: {}", d.part1);
     //println!("Part 2: {}", d.part2);
-    println!("{:?}", Puzzle::time(PUZZLE));
+    //println!("{:?}", Puzzle::time(PUZZLE));
 }
 
 #[derive(Default, Debug)]

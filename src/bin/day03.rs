@@ -87,13 +87,10 @@ impl Solver for Puzzle {
 }
 
 #[cfg(test)]
-mod day01 {
+mod lobby {
     use super::*;
 
-    const SAMPLE: &str = "987654321111111
-811111111111119
-234234234234278
-818181911112111";
+    const SAMPLE: &str = include_str!("../../samples/day03.txt");
 
     #[test]
     fn test1() {

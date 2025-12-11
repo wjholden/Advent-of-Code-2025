@@ -109,6 +109,7 @@ pub struct Puzzle {
 
 impl Solver for Puzzle {
     fn new(input: &str) -> Self {
+        let input = input.trim();
         let input = input.replace('\n', "");
         let pairs = input
             .split(',')
@@ -142,12 +143,10 @@ impl Solver for Puzzle {
 }
 
 #[cfg(test)]
-mod day01 {
+mod gift_shop {
     use super::*;
 
-    const SAMPLE: &str = "11-22,95-115,998-1012,1188511880-1188511890,222220-222224,
-1698522-1698528,446443-446449,38593856-38593862,565653-565659,
-824824821-824824827,2121212118-2121212124";
+    const SAMPLE: &str = include_str!("../../samples/day02.txt");
 
     #[test]
     fn test1() {

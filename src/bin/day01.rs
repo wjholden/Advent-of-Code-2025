@@ -76,16 +76,7 @@ impl Solver for Puzzle {
 mod secret_entrance {
     use super::*;
 
-    const SAMPLE: &str = "L68
-L30
-R48
-L5
-R60
-L55
-L1
-L99
-R14
-L82";
+    const SAMPLE: &str = include_str!("../../samples/day01.txt");
 
     #[test]
     fn test1() {
