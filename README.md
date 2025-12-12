@@ -12,10 +12,10 @@ Rust again, this time with an object-oriented design.
 6. `**` vertical text layout
 7. `**` dynamic programming, graph paths
 8. `**` union-find/disjoint sets, Euclidean distances
-9. `  `
-10. `  `
-11. `  `
-12. `  `
+9. `**` coordinate compression, geometry, flood fill
+10. `**` linear algebra, constraint solvers
+11. `**` directed acyclic graphs, DFS, dynamic programming
+12. `**` special cases of NP-complete problems
 
 # Lessons Learned
 - [`Iterator::max`](https://www.reddit.com/r/adventofcode/comments/1pcwgjl/2025_day_3_rust_iteratormax_go_brrrrr/) returns the *last* element if multiples.
@@ -29,3 +29,7 @@ Rust again, this time with an object-oriented design.
 - In day 8, using a priority queue should be (I don't have it working yet) a substantial performance improvement over populating a full distances matrix and then sorting it.
 - Also in day 8, you don't need to calculate the square roots of the distances.
 - Tuples are supposed to be ordered in lexical order, from left to right.
+- Coordinate compression is so clever!
+- `BinaryHeap::iter` doesn't do what you expect. Use `BinaryHeap::pop`.
+- I'm excited about the potential in [Zelen](https://github.com/radevgit/zelen) and [Selen](https://github.com/radevgit/selen), but not presently fast enough for [Day 10](https://adventofcode.com/2025/day/10). See also [Zelen issue #7](https://github.com/radevgit/zelen/issues/7).
+- Ratatui is nice. I'd like to write more TUI apps like this.
