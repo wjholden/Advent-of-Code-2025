@@ -1,4 +1,4 @@
-use std::{collections::HashSet, fs};
+use std::collections::HashSet;
 
 use advent_of_code_2025::*;
 use nalgebra::{DMatrix, DVector};
@@ -32,10 +32,8 @@ fn main() {
     let d = Puzzle::new(PUZZLE);
     let d = d.solve();
     println!("Part 1: {}", d.part1);
-    //println!("Part 2: {}", d.part2);
-    println!("Part 2: See mzn/ directory. Solve each with Minizinc with something like:");
-    println!(r#"PS> gci mzn/ | % {{ & 'C:\Program Files\MiniZinc\minizinc.exe' $_.FullName }}"#);
-    //println!("{:?}", Puzzle::time(PUZZLE));
+    println!("Part 2: {}", d.part2);
+    println!("{:?}", Puzzle::time(PUZZLE));
 }
 
 #[derive(Debug)]
@@ -100,7 +98,8 @@ impl Machine {
             .expect("minimum number of buttons to construct goal")
     }
 
-    fn part2(&self) -> Result<i32, Box<dyn std::error::Error>> {
+    /// Not used in the actual solution because we invoke Minizinc instead.
+    fn _part2(&self) -> Result<i32, Box<dyn std::error::Error>> {
         let ast = zelen::parse(&self.constraints())?;
         let model_data = Translator::translate_with_vars(&ast)?;
         let objective = model_data.objective_var.ok_or("no objective")?;
@@ -112,10 +111,6 @@ impl Machine {
         // way to increase the timeout, maybe we could find the objective.
         // Currently, the solver times out and we never get past some inputs.
         let solution = model_data.model.minimize(objective)?;
-        // for (name, var_id) in &model_data.int_vars {
-        //     let value = solution.get_int(*var_id);
-        //     println!("{} = {}", name, value);
-        // }
         Ok(solution.get_int(objective))
     }
 
@@ -132,14 +127,14 @@ impl Machine {
         for var in variables {
             // Zelen doesn't like the "0.." syntax. Zelen needs an explicit
             // upper bound.
-            s.push_str(format!("var 0..: {var};\n").as_str());
+            s.push_str(format!("var 0..300: {var};\n").as_str());
         }
         // The solver will work with "var int: z", but it should speed things
         // up a little to add the lower bound.
         //
         // Actually, you can speed things up a lot if you add an upper bound,
         // but with a loss of generality.
-        s.push_str("var 1..: z;\n");
+        s.push_str("var int: z;\n");
         for i in 0..m {
             let vars: Vec<&str> = (0..n)
                 .filter_map(|j| {
@@ -157,7 +152,7 @@ impl Machine {
         let sum = variables.join(" + ");
         s.push_str(format!("constraint z = {sum};\n").as_str());
         s.push_str("solve minimize z;\n");
-        s.push_str(r#"output "\(z)";"#);
+        s.push_str(r#"output show(z);"#);
         s
     }
 }
@@ -178,10 +173,60 @@ impl Solver for Puzzle {
 
     fn solve(mut self) -> Self {
         self.part1 = self.machines.iter().map(Machine::part1).sum();
-        for (i, machine) in self.machines.iter().enumerate() {
-            let filename = format!("mzn/{i:0>3}.mzn");
-            fs::write(filename, machine.constraints()).expect("should write MZN file to disk");
-            //self.part2 += machine.part2().unwrap() as usize;
+
+        #[cfg(not(test))]
+        {
+            use std::{fs, io::ErrorKind};
+
+            match fs::create_dir("mzn") {
+                Ok(()) => Ok(()),
+                Err(err) if err.kind() == ErrorKind::AlreadyExists => Ok(()), // suppress error if directory already exists
+                Err(other) => Err(other),
+            }
+            .unwrap();
+        }
+
+        for (_i, machine) in self.machines.iter().enumerate() {
+            #[cfg(not(test))]
+            {
+                use std::fs;
+
+                let filename = format!("mzn/{_i:0>3}.mzn");
+                fs::write(filename, machine.constraints()).expect("should write MZN file to disk");
+            }
+            #[cfg(test)]
+            {
+                self.part2 += machine._part2().unwrap() as usize;
+            }
+        }
+
+        #[cfg(not(test))]
+        {
+            use std::process::Command;
+
+            let command = r#"
+(
+    Get-ChildItem -Path mzn/ |
+    ForEach-Object -Parallel { & minizinc.exe $_.FullName --solution-separator "" } |
+    Select-String -NotMatch "==========" |
+    ForEach-Object { [int]"$($_)" } |
+    Measure-Object -Sum
+).Sum
+        "#;
+            let output = Command::new("pwsh")
+                .args(["-nol", "-c", command])
+                .output()
+                .expect("PowerShell 7 pipeline to Minizinc");
+            let stdout = String::from_utf8(output.stdout).expect("standard output from command");
+            let stdout = stdout.trim();
+            self.part2 = stdout.parse().unwrap();
+        }
+
+        #[cfg(not(test))]
+        {
+            use std::fs;
+
+            fs::remove_dir_all("mzn").expect("cleanup temporary files");
         }
         self
     }
@@ -201,6 +246,6 @@ mod factory {
     #[test]
     fn test2() {
         // Doesn't work.
-        //assert_eq!(Puzzle::new(SAMPLE).solve().part2, 33);
+        assert_eq!(Puzzle::new(SAMPLE).solve().part2, 33);
     }
 }

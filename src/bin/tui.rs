@@ -1,5 +1,8 @@
 use advent_of_code_2025::*;
-use std::{io, time::Instant};
+use std::{
+    io,
+    time::{Duration, Instant},
+};
 
 mod day01;
 mod day02;
@@ -9,11 +12,16 @@ mod day05;
 mod day06;
 mod day07;
 mod day08;
+mod day09;
+mod day10;
+mod day11;
+mod day12;
 
 use crossterm::event::{self, Event, KeyCode, KeyEventKind};
 use ratatui::{
     DefaultTerminal, Frame,
     layout::{Constraint, Layout, Rect},
+    style::{Modifier, Style},
     widgets::{Block, Borders, Padding, Paragraph},
 };
 
@@ -25,8 +33,11 @@ fn main() -> io::Result<()> {
 }
 
 fn run(mut terminal: DefaultTerminal) -> io::Result<()> {
+    println!("Solving all 12 days...");
+    let solutions = solutions();
+    terminal.clear()?;
     loop {
-        terminal.draw(draw)?;
+        terminal.draw(|frame| draw(frame, &solutions))?;
         if let Event::Key(key) = event::read()? {
             if key.kind == KeyEventKind::Press && key.code == KeyCode::Char('q') {
                 break Ok(());
@@ -35,7 +46,7 @@ fn run(mut terminal: DefaultTerminal) -> io::Result<()> {
     }
 }
 
-fn draw(frame: &mut Frame) {
+fn draw(frame: &mut Frame, solutions: &[(usize, usize, Duration)]) {
     let main_layout = Layout::vertical([
         Constraint::Length(1),
         Constraint::Min(0),
@@ -58,7 +69,13 @@ fn draw(frame: &mut Frame) {
         })
         .collect();
     frame.render_widget(
-        Paragraph::new("Advent of Code 2025").alignment(ratatui::layout::Alignment::Center),
+        Paragraph::new("Advent of Code 2025")
+            .alignment(ratatui::layout::Alignment::Center)
+            .style(
+                Style::default()
+                    .fg(ratatui::style::Color::Yellow)
+                    .add_modifier(Modifier::BOLD),
+            ),
         title_area,
     );
     frame.render_widget(
@@ -66,13 +83,15 @@ fn draw(frame: &mut Frame) {
             .alignment(ratatui::layout::Alignment::Center),
         footer_area,
     );
-    let solutions = solutions();
     let mut day = 0;
     for row in 0..3 {
         for col in 0..4 {
             let message = match solutions.get(day) {
+                Some((part1, 0, duration)) => {
+                    format!("Part 1:  {part1}\nPart 2:  Merry Christmas!\n{duration:?}")
+                }
                 Some((part1, part2, duration)) => {
-                    format!("Part 1: {part1}\nPart 2: {part2}\n{duration:?}")
+                    format!("Part 1:  {part1}\nPart 2:  {part2}\nRuntime: {duration:?}")
                 }
                 None => "Coming soon!".to_owned(),
             };
@@ -131,6 +150,26 @@ fn solutions() -> Vec<(usize, usize, std::time::Duration)> {
             let start = Instant::now();
             let d = day08::Puzzle::new(day08::PUZZLE).solve();
             (d.part1, d.part2, start.elapsed())
+        },
+        {
+            let start = Instant::now();
+            let d = day09::Puzzle::new(day09::PUZZLE).solve();
+            (d.part1, d.part2, start.elapsed())
+        },
+        {
+            let start = Instant::now();
+            let d = day10::Puzzle::new(day10::PUZZLE).solve();
+            (d.part1, d.part2, start.elapsed())
+        },
+        {
+            let start = Instant::now();
+            let d = day11::Puzzle::new(day11::PUZZLE).solve();
+            (d.part1, d.part2, start.elapsed())
+        },
+        {
+            let start = Instant::now();
+            let d = day12::Puzzle::new(day12::PUZZLE).solve();
+            (d.part1, 0, start.elapsed())
         },
     ]
 }

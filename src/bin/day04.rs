@@ -163,7 +163,7 @@ impl Solver for Puzzle {
 }
 
 #[cfg(test)]
-mod day01 {
+mod printing_department {
     use super::*;
 
     const SAMPLE: &str = "..@@.@@@@.

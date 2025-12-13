@@ -210,7 +210,7 @@ impl Solver for Puzzle {
 }
 
 #[cfg(test)]
-mod day01 {
+mod trash_compactor {
     use super::*;
 
     // Zed is trimming trailing whitespaces in my string literal. Never noticed

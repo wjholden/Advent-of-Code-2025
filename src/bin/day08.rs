@@ -1,8 +1,5 @@
 use advent_of_code_2025::*;
-#[cfg(not(feature = "faster"))]
 use nalgebra::DMatrix;
-#[cfg(feature = "faster")]
-use std::{cmp::Reverse, collections::BinaryHeap};
 
 pub const PUZZLE: &str = include_str!("../../puzzles/day08.txt");
 
@@ -22,29 +19,14 @@ fn main() {
     println!("{:?}", Puzzle::time(PUZZLE));
 }
 
-#[cfg(not(feature = "faster"))]
 #[derive(Default, Debug)]
 struct Point(f64, f64, f64);
 
-#[cfg(feature = "faster")]
-#[derive(Default, Debug)]
-struct Point(usize, usize, usize);
-
 impl Point {
-    #[cfg(not(feature = "faster"))]
     /// Classical Euclidean distance.
     fn distance(&self, other: &Self) -> f64 {
         ((self.0 - other.0).powi(2) + (self.1 - other.1).powi(2) + (self.2 - other.2).powi(2))
             .sqrt()
-    }
-
-    #[cfg(feature = "faster")]
-    /// You don't actually need to take the square root! Not only does this
-    /// save the sqrt instruction, it also allows us to use integers.
-    fn distance(&self, other: &Self) -> usize {
-        self.0.abs_diff(other.0).pow(2)
-            + self.1.abs_diff(other.1).pow(2)
-            + self.2.abs_diff(other.2).pow(2)
     }
 }
 
@@ -107,10 +89,7 @@ pub struct Puzzle {
     pub part1: usize,
     pub part2: usize,
     points: Vec<Point>,
-    #[cfg(not(feature = "faster"))]
     distances: DMatrix<f64>,
-    #[cfg(feature = "faster")]
-    distances: BinaryHeap<Reverse<(usize, (usize, usize))>>,
 }
 
 impl Solver for Puzzle {
@@ -120,51 +99,24 @@ impl Solver for Puzzle {
         let mut it = input.split([',', '\n']);
         // Split doesn't provide a windows() function.
         while let (Some(x), Some(y), Some(z)) = (it.next(), it.next(), it.next()) {
-            #[cfg(not(feature = "faster"))]
-            {
-                instance.points.push(Point(
-                    x.parse::<f64>().expect("x"),
-                    y.parse::<f64>().expect("y"),
-                    z.parse::<f64>().expect("z"),
-                ));
-            }
-            #[cfg(feature = "faster")]
-            {
-                instance.points.push(Point(
-                    x.parse::<usize>().expect("x"),
-                    y.parse::<usize>().expect("y"),
-                    z.parse::<usize>().expect("z"),
-                ));
-            }
+            instance.points.push(Point(
+                x.parse::<f64>().expect("x"),
+                y.parse::<f64>().expect("y"),
+                z.parse::<f64>().expect("z"),
+            ));
         }
 
-        #[cfg(not(feature = "faster"))]
-        {
-            let n = instance.points.len();
-            // We have the points. Now we need their distances.
-            instance.distances = DMatrix::from_fn(n, n, |i, j| {
-                if i < j {
-                    instance.points[i].distance(&instance.points[j])
-                } else {
-                    // By filling the diagonal and lower triangle with infinities,
-                    // we won't have to deal with duplicated lowest distances.
-                    f64::INFINITY
-                }
-            });
-        }
-        #[cfg(feature = "faster")]
-        {
-            for (i, p1) in instance.points.iter().enumerate() {
-                for (j, p2) in instance.points.iter().enumerate() {
-                    if i > j {
-                        assert_eq!(p1.distance(&p2), p2.distance(&p1));
-                        let d = p1.distance(&p2);
-                        instance.distances.push(Reverse((d, (i, j))));
-                        println!("insert {i} and {j} with distance {}", (d as f64).sqrt());
-                    }
-                }
+        let n = instance.points.len();
+        // We have the points. Now we need their distances.
+        instance.distances = DMatrix::from_fn(n, n, |i, j| {
+            if i < j {
+                instance.points[i].distance(&instance.points[j])
+            } else {
+                // By filling the diagonal and lower triangle with infinities,
+                // we won't have to deal with duplicated lowest distances.
+                f64::INFINITY
             }
-        }
+        });
 
         instance
     }
@@ -182,53 +134,27 @@ impl Solver for Puzzle {
 
         let mut disjoint_set = DisjointSet::new(self.points.len());
 
-        #[cfg(not(feature = "faster"))]
-        {
-            // Look, I know this is stupid. We'll grab the smallest element
-            // from our matrix n times, setting its value once we take it.
-            let mut di: Vec<(usize, &f64)> = self.distances.into_iter().enumerate().collect();
-            di.sort_by(|&(_, &d1), &(_, &d2)| d1.partial_cmp(&d2).unwrap());
-            for (i, _) in di[0..n].iter() {
-                let a = i / self.points.len();
-                let b = i % self.points.len();
-                // println!(
-                //     "{a} and {b} (distance: {})",
-                //     self.points[a].distance(&self.points[b])
-                // );
-                disjoint_set.union(a, b);
-            }
-
-            self.part1 = disjoint_set.part1();
-
-            for (i, _) in di[n..].iter() {
-                let a = i / self.points.len();
-                let b = i % self.points.len();
-                disjoint_set.union(a, b);
-                if disjoint_set.all_equal() {
-                    let x1 = self.points[a].0 as usize;
-                    let x2 = self.points[b].0 as usize;
-                    self.part2 = x1 * x2;
-                    break;
-                }
-            }
+        // Look, I know this is stupid. We'll grab the smallest element
+        // from our matrix n times, setting its value once we take it.
+        let mut di: Vec<(usize, &f64)> = self.distances.into_iter().enumerate().collect();
+        di.sort_by(|&(_, &d1), &(_, &d2)| d1.partial_cmp(&d2).unwrap());
+        for (i, _) in di[0..n].iter() {
+            let a = i / self.points.len();
+            let b = i % self.points.len();
+            disjoint_set.union(a, b);
         }
 
-        #[cfg(feature = "faster")]
-        {
-            // Clever idea I saw on Reddit and just had to try.
-            for Reverse((d, (a, b))) in self.distances.iter().take(n) {
-                println!("{a} and {b} (distance: {})", (*d as f64).sqrt());
-                disjoint_set.union(*a, *b);
-            }
-            self.part1 = disjoint_set.part1();
-            for Reverse((_, (a, b))) in self.distances.iter() {
-                disjoint_set.union(*a, *b);
-                if disjoint_set.all_equal() {
-                    let x1 = self.points[*a].0 as usize;
-                    let x2 = self.points[*b].0 as usize;
-                    self.part2 = x1 * x2;
-                    break;
-                }
+        self.part1 = disjoint_set.part1();
+
+        for (i, _) in di[n..].iter() {
+            let a = i / self.points.len();
+            let b = i % self.points.len();
+            disjoint_set.union(a, b);
+            if disjoint_set.all_equal() {
+                let x1 = self.points[a].0 as usize;
+                let x2 = self.points[b].0 as usize;
+                self.part2 = x1 * x2;
+                break;
             }
         }
 

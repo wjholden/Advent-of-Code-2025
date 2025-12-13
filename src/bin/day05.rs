@@ -110,7 +110,7 @@ impl Solver for Puzzle {
 }
 
 #[cfg(test)]
-mod day01 {
+mod cafeteria {
     use super::*;
 
     const SAMPLE: &str = "3-5

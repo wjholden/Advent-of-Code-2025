@@ -69,7 +69,7 @@ impl Solver for Puzzle {
 }
 
 #[cfg(test)]
-mod day01 {
+mod laboratories {
     use super::*;
 
     const SAMPLE: &str = include_str!("../../samples/day07.txt");
