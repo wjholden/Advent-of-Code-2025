@@ -1,6 +1,6 @@
 # Advent-of-Code-2025
 
-Rust again, this time with an object-oriented design.
+Rust again, this time with an object-oriented design and no coding assistant.
 
 # Daily Themes and Stars
 
@@ -30,6 +30,7 @@ Rust again, this time with an object-oriented design.
 - Also in day 8, you don't need to calculate the square roots of the distances.
 - Tuples are supposed to be ordered in lexical order, from left to right.
 - Coordinate compression is so clever!
-- `BinaryHeap::iter` doesn't do what you expect. Use `BinaryHeap::pop`.
+- [`BinaryHeap::iter` doesn't do what you expect](https://github.com/rust-lang/rust/issues/59278). Use `BinaryHeap::pop` instead.
 - I'm excited about the potential in [Zelen](https://github.com/radevgit/zelen) and [Selen](https://github.com/radevgit/selen), but not presently fast enough for [Day 10](https://adventofcode.com/2025/day/10). See also [Zelen issue #7](https://github.com/radevgit/zelen/issues/7).
+- [Pumpkin](https://github.com/consol-lab/pumpkin) solves Day 10 in about 30 seconds (in parallel) on my machine, but this is still substantially slower than calling [Gecode](https://www.gecode.dev) through [MiniZinc](https://www.minizinc.org). The Pumpkin developers quickly responded to a question I raised about how to model equality constraints (see [Pumpkin issue #336](https://github.com/ConSol-Lab/Pumpkin/issues/336#issuecomment-3654540256)).
 - Ratatui is nice. I'd like to write more TUI apps like this.

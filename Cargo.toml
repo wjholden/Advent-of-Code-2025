@@ -4,12 +4,16 @@ version = "0.1.0"
 edition = "2024"
 
 [features]
-#default = ["faster"]
+default = ["faster", "pumpkin"]
 faster = []
+zelen = []
+pumpkin = []
 
 [dependencies]
 crossterm = "0.29.0"
 nalgebra = "0.34.1"
+pumpkin-solver = "0.2.2"
 rand = "0.9.2"
 ratatui = "0.29.0"
+rayon = "1.11.0"
 zelen = "0.5.1"

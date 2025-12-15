@@ -2,7 +2,12 @@ use std::collections::HashSet;
 
 use advent_of_code_2025::*;
 use nalgebra::{DMatrix, DVector};
-use zelen::Translator;
+use pumpkin_solver::{
+    ConstraintOperationError, DefaultBrancher, constraints,
+    optimisation::{OptimisationDirection, linear_sat_unsat::LinearSatUnsat},
+    results::{OptimisationResult, ProblemSolution, SolutionReference},
+    termination::Indefinite,
+};
 
 pub const PUZZLE: &str = include_str!("../../puzzles/day10.txt");
 
@@ -26,14 +31,14 @@ pub const PUZZLE: &str = include_str!("../../puzzles/day10.txt");
 ///
 /// So Minizinc. I've built some Minizinc files that I'm proud of, but I've
 /// learned that Zelen isn't yet fast or capable enough to compete with Gecode.
-/// I did get
+///
 /// This program outputs to the mzn/ directory.
 fn main() {
     let d = Puzzle::new(PUZZLE);
     let d = d.solve();
     println!("Part 1: {}", d.part1);
     println!("Part 2: {}", d.part2);
-    println!("{:?}", Puzzle::time(PUZZLE));
+    //println!("{:?}", Puzzle::time(PUZZLE));
 }
 
 #[derive(Debug)]
@@ -98,8 +103,9 @@ impl Machine {
             .expect("minimum number of buttons to construct goal")
     }
 
+    #[cfg(feature = "zelen")]
     /// Not used in the actual solution because we invoke Minizinc instead.
-    fn _part2(&self) -> Result<i32, Box<dyn std::error::Error>> {
+    fn part2_zelen(&self) -> Result<i32, Box<dyn std::error::Error>> {
         let ast = zelen::parse(&self.constraints())?;
         let model_data = Translator::translate_with_vars(&ast)?;
         let objective = model_data.objective_var.ok_or("no objective")?;
@@ -114,6 +120,67 @@ impl Machine {
         Ok(solution.get_int(objective))
     }
 
+    #[cfg(feature = "pumpkin")]
+    fn part2_pumpkin(&self) -> Result<i32, ConstraintOperationError> {
+        let mut solver = pumpkin_solver::Solver::default();
+
+        let m = self.components.nrows(); // number of constraints
+        let n = self.components.ncols(); // number of variables
+        assert_eq!(m, self.joltages.len());
+
+        // println!("{}", self.components);
+
+        let variables: Vec<_> = (0..n).map(|_| solver.new_bounded_integer(0, 300)).collect();
+
+        // joltage[j] = sum(variable[i] if components[i,j] == 1)
+        for i in 0..m {
+            // Find variables present in this constraint.
+            let vars: Vec<_> = (0..n)
+                .filter_map(|j| match self.components[(i, j)] {
+                    1 => Some(variables[j]),
+                    0 => None,
+                    _ => panic!("non-binary value in components matrix"),
+                })
+                .collect();
+            // println!("sum of {vars:?} = {}", self.joltages[i]);
+            let tag = solver.new_constraint_tag();
+            solver
+                .add_constraint(constraints::equals(vars, self.joltages[i] as i32, tag))
+                .post()?;
+        }
+
+        // This is the only way to express x[i] + x[j] = x[k] in Pumpkin.
+        // The constraints::equals function expects an i32 as the second arg.
+        let objective = (1..n).fold(variables[0], |a, i| {
+            let b = variables[i];
+            let c = solver.new_bounded_integer(0, 1000);
+            let tag = solver.new_constraint_tag();
+            solver
+                .add_constraint(constraints::plus(a, b, c, tag))
+                .post()
+                .unwrap();
+            c
+        });
+
+        let mut termination = Indefinite;
+        let mut brancher = solver.default_brancher();
+
+        let callback: fn(&pumpkin_solver::Solver, SolutionReference, &DefaultBrancher) =
+            |_, _, _| {};
+        let result = solver.optimise(
+            &mut brancher,
+            &mut termination,
+            LinearSatUnsat::new(OptimisationDirection::Minimise, objective, callback),
+        );
+
+        if let OptimisationResult::Optimal(solution) = result {
+            return Ok(solution.get_integer_value(objective));
+        } else {
+            panic!("failed to find a solution");
+        }
+    }
+
+    #[cfg(not(feature = "pumpkin"))]
     fn constraints(&self) -> String {
         let mut s = String::new();
         let m = self.joltages.len();
@@ -173,62 +240,72 @@ impl Solver for Puzzle {
 
     fn solve(mut self) -> Self {
         self.part1 = self.machines.iter().map(Machine::part1).sum();
+        self.part2 = self.part2();
 
-        #[cfg(not(test))]
-        {
-            use std::{fs, io::ErrorKind};
-
-            match fs::create_dir("mzn") {
-                Ok(()) => Ok(()),
-                Err(err) if err.kind() == ErrorKind::AlreadyExists => Ok(()), // suppress error if directory already exists
-                Err(other) => Err(other),
-            }
-            .unwrap();
-        }
-
-        for (_i, machine) in self.machines.iter().enumerate() {
-            #[cfg(not(test))]
-            {
-                use std::fs;
-
-                let filename = format!("mzn/{_i:0>3}.mzn");
-                fs::write(filename, machine.constraints()).expect("should write MZN file to disk");
-            }
-            #[cfg(test)]
-            {
-                self.part2 += machine._part2().unwrap() as usize;
-            }
-        }
-
-        #[cfg(not(test))]
-        {
-            use std::process::Command;
-
-            let command = r#"
-(
-    Get-ChildItem -Path mzn/ |
-    ForEach-Object -Parallel { & minizinc.exe $_.FullName --solution-separator "" } |
-    Select-String -NotMatch "==========" |
-    ForEach-Object { [int]"$($_)" } |
-    Measure-Object -Sum
-).Sum
-        "#;
-            let output = Command::new("pwsh")
-                .args(["-nol", "-c", command])
-                .output()
-                .expect("PowerShell 7 pipeline to Minizinc");
-            let stdout = String::from_utf8(output.stdout).expect("standard output from command");
-            let stdout = stdout.trim();
-            self.part2 = stdout.parse().unwrap();
-        }
-
-        #[cfg(not(test))]
-        {
-            use std::fs;
-
-            fs::remove_dir_all("mzn").expect("cleanup temporary files");
-        }
+        // for (_i, machine) in self.machines.iter().enumerate() {
+        //     self.part2 += machine._part2().unwrap() as usize;
+        //     self._pumpkin += machine._part2_pumpkin().unwrap();
+        // }
         self
+    }
+}
+
+impl Puzzle {
+    #[cfg(not(feature = "pumpkin"))]
+    #[cfg(not(feature = "zelen"))]
+    fn part2(&self) -> usize {
+        match fs::create_dir("mzn") {
+            Ok(()) => Ok(()),
+            Err(err) if err.kind() == ErrorKind::AlreadyExists => Ok(()), // suppress error if directory already exists
+            Err(other) => Err(other),
+        }
+        .unwrap();
+
+        for (i, machine) in self.machines.iter().enumerate() {
+            let filename = format!("mzn/{i:0>3}.mzn");
+            fs::write(filename, machine.constraints()).expect("should write MZN file to disk");
+        }
+
+        let command = r#"
+(
+Get-ChildItem -Path mzn/ |
+ForEach-Object -Parallel { & minizinc.exe $_.FullName --solution-separator "" } |
+Select-String -NotMatch "==========" |
+ForEach-Object { [int]"$($_)" } |
+Measure-Object -Sum
+).Sum
+    "#;
+        let output = Command::new("pwsh")
+            .args([
+                "-NoProfile",
+                "-NonInteractive",
+                "-NoLogo",
+                "-Command",
+                command,
+            ])
+            .output()
+            .expect("PowerShell 7 pipeline to Minizinc");
+        let stdout = String::from_utf8(output.stdout).expect("standard output from command");
+        let stdout = stdout.trim();
+        self.part2 = stdout.parse().unwrap();
+
+        fs::remove_dir_all("mzn").expect("cleanup temporary files");
+    }
+
+    #[cfg(feature = "zelen")]
+    fn part2(&self) -> usize {
+        self.machines.map(machine::part2).sum()
+    }
+
+    #[cfg(feature = "pumpkin")]
+    fn part2(&self) -> usize {
+        use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
+
+        self.machines
+            .par_iter()
+            .map(Machine::part2_pumpkin)
+            .map(|v| v.unwrap())
+            .sum::<i32>() as usize
     }
 }
 
@@ -245,7 +322,6 @@ mod factory {
 
     #[test]
     fn test2() {
-        // Doesn't work.
         assert_eq!(Puzzle::new(SAMPLE).solve().part2, 33);
     }
 }
