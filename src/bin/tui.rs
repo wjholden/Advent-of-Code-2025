@@ -159,7 +159,7 @@ fn solutions() -> Vec<(usize, usize, std::time::Duration)> {
         {
             let start = Instant::now();
             let d = day10::Puzzle::new(day10::PUZZLE).solve();
-            (d.part1, d.part2, start.elapsed())
+            (d.part1 as usize, d.part2 as usize, start.elapsed())
         },
         {
             let start = Instant::now();

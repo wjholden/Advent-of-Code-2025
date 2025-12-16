@@ -38,14 +38,25 @@ fn main() {
     let d = d.solve();
     println!("Part 1: {}", d.part1);
     println!("Part 2: {}", d.part2);
+
+    #[cfg(not(feature = "faster"))]
+    {
+        println!("Algorithm 1");
+    }
+
+    #[cfg(feature = "faster")]
+    {
+        println!("Algorithm 2");
+    }
+
     //println!("{:?}", Puzzle::time(PUZZLE));
 }
 
 #[derive(Debug)]
 struct Machine {
-    goal: DVector<usize>,
-    components: DMatrix<usize>,
-    joltages: DVector<usize>,
+    goal: DVector<i32>,
+    components: DMatrix<i32>,
+    joltages: DVector<i32>,
 }
 
 impl Machine {
@@ -80,11 +91,11 @@ impl Machine {
         }
     }
 
-    fn part1(&self) -> usize {
+    fn part1(&self) -> i32 {
         let n = self.components.ncols();
         let mut x = DVector::zeros(n);
         let mut solutions = HashSet::new();
-        'outer: for i in 0..(2usize.pow(n as u32)) {
+        'outer: for i in 0..(2i32.pow(n as u32)) {
             for j in 0..n {
                 x[j] = (i >> j) & 1;
             }
@@ -121,6 +132,7 @@ impl Machine {
     }
 
     #[cfg(feature = "pumpkin")]
+    #[cfg(not(feature = "faster"))]
     fn part2_pumpkin(&self) -> Result<i32, ConstraintOperationError> {
         let mut solver = pumpkin_solver::Solver::default();
 
@@ -180,6 +192,73 @@ impl Machine {
         }
     }
 
+    #[cfg(feature = "pumpkin")]
+    #[cfg(feature = "faster")]
+    fn part2_pumpkin2(&self) -> Result<i32, ConstraintOperationError> {
+        use std::iter::once;
+
+        use pumpkin_solver::variables::TransformableVariable;
+
+        let mut solver = pumpkin_solver::Solver::default();
+
+        let m = self.components.nrows(); // number of constraints
+        let n = self.components.ncols(); // number of variables
+        assert_eq!(m, self.joltages.len());
+
+        let x: Vec<_> = (0..n).map(|_| solver.new_bounded_integer(0, 300)).collect();
+        let z = solver.new_bounded_integer(1, 1000);
+
+        // one constraint per joltage
+        for i in 0..m {
+            let joltage = self.joltages[i];
+            let multipliers = self.components.row(i);
+            let variables: Vec<_> = multipliers
+                .iter()
+                .enumerate()
+                .filter_map(|(j, a_ij)| match a_ij {
+                    1 => Some(x[j]),
+                    0 => None,
+                    _ => panic!("non-binary value in components matrix"),
+                })
+                .collect();
+            let tag = solver.new_constraint_tag();
+            solver
+                .add_constraint(constraints::equals(variables, joltage, tag))
+                .post()?;
+        }
+
+        // Sum of variables is equal z, our minimization objective.
+        // We can't model a + b + c + d + ... = z directly in Pumpkin,
+        // but equivalently a + b + c + d + ... - z = 0.
+        let tag = solver.new_constraint_tag();
+        let z_sum: Vec<_> = x
+            .iter()
+            .map(|x_i| x_i.scaled(1))
+            .chain(once(z.scaled(-1)))
+            .collect();
+        solver
+            .add_constraint(constraints::equals(z_sum, 0, tag))
+            .post()?;
+
+        let mut termination = Indefinite;
+        let mut brancher = solver.default_brancher();
+
+        let callback: fn(&pumpkin_solver::Solver, SolutionReference, &DefaultBrancher) =
+            |_, _, _| {};
+        let result = solver.optimise(
+            &mut brancher,
+            &mut termination,
+            LinearSatUnsat::new(OptimisationDirection::Minimise, z, callback),
+        );
+
+        if let OptimisationResult::Optimal(solution) = result {
+            //println!("{} => {}", self.components, solution.get_integer_value(z));
+            return Ok(solution.get_integer_value(z));
+        } else {
+            panic!("failed to find a solution");
+        }
+    }
+
     #[cfg(not(feature = "pumpkin"))]
     fn constraints(&self) -> String {
         let mut s = String::new();
@@ -226,8 +305,8 @@ impl Machine {
 
 #[derive(Default, Debug)]
 pub struct Puzzle {
-    pub part1: usize,
-    pub part2: usize,
+    pub part1: i32,
+    pub part2: i32,
     machines: Vec<Machine>,
 }
 
@@ -298,14 +377,27 @@ Measure-Object -Sum
     }
 
     #[cfg(feature = "pumpkin")]
-    fn part2(&self) -> usize {
+    #[cfg(feature = "faster")]
+    fn part2(&self) -> i32 {
+        use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
+
+        self.machines
+            .par_iter()
+            .map(Machine::part2_pumpkin2)
+            .map(|v| v.unwrap())
+            .sum()
+    }
+
+    #[cfg(feature = "pumpkin")]
+    #[cfg(not(feature = "faster"))]
+    fn part2(&self) -> i32 {
         use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
 
         self.machines
             .par_iter()
             .map(Machine::part2_pumpkin)
             .map(|v| v.unwrap())
-            .sum::<i32>() as usize
+            .sum()
     }
 }
 
