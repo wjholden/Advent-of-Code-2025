@@ -8,6 +8,9 @@ pub const PUZZLE: &str = include_str!("../../puzzles/day12.txt");
 /// Glad we played this game on easy. The last day usually isn't so hard, so
 /// when I saw Tetris tiling I was pretty worried we were in for another
 /// NP-hard nightmare.
+///
+/// Apparently Knuth's "Dancing Links" technique can solve this:
+/// https://arxiv.org/pdf/cs/0011047
 fn main() {
     let d = Puzzle::new(PUZZLE);
     let d = d.solve();

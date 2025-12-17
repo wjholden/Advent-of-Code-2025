@@ -54,12 +54,12 @@ impl Solver for Puzzle {
         let a = self.paths("svr", "fft", &memo);
         let b = self.paths("fft", "dac", &memo);
         let c = self.paths("dac", "out", &memo);
-        let d = self.paths("svr", "dac", &memo);
-        let e = self.paths("dac", "fft", &memo);
-        let f = self.paths("fft", "out", &memo);
+        // let d = self.paths("svr", "dac", &memo);
+        // let e = self.paths("dac", "fft", &memo);
+        // let f = self.paths("fft", "out", &memo);
 
         self.part1 = p1;
-        self.part2 = a * b * c + d * e * f;
+        self.part2 = a * b * c /* + d * e * f */;
 
         self
     }
@@ -201,8 +201,8 @@ impl Puzzle {
             c += m.index((dac, out));
             m = m * &m_original;
         }
-        print!("{a} * {b} * {c} = ");
-        println!("{}", a * b * c);
+        // print!("{a} * {b} * {c} = ");
+        // println!("{}", a * b * c);
         a * b * c
     }
 }

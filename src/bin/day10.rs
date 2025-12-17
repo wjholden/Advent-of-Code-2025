@@ -32,7 +32,10 @@ pub const PUZZLE: &str = include_str!("../../puzzles/day10.txt");
 /// So Minizinc. I've built some Minizinc files that I'm proud of, but I've
 /// learned that Zelen isn't yet fast or capable enough to compete with Gecode.
 ///
-/// This program outputs to the mzn/ directory.
+/// Pumpkin is a lot faster than Zelen and solves part 2 in a reasonable time.
+///
+/// This post describes an alternative approach:
+/// https://www.reddit.com/r/adventofcode/comments/1pk87hl/2025_day_10_part_2_bifurcate_your_way_to_victory/
 fn main() {
     let d = Puzzle::new(PUZZLE);
     let d = d.solve();
