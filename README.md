@@ -2,6 +2,8 @@
 
 Rust again, this time with an object-oriented design and no coding assistant.
 
+![Ratatui screenshot showing solutions and times](solutions.png)
+
 # Daily Themes and Stars
 
 1. `**` modular arithmetic, signed vs unsigned numbers
